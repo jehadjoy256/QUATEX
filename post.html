@@ -2,21 +2,52 @@
 <html lang="bn">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>পোস্ট পড়ুন | সাহিত্যপাতা</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>পোস্ট পড়ুন | সাহিত্যপাতা - বাংলা সাহিত্যের আঙ্গিনা</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="css/style.css">
-  <link rel="icon" href="logo.png">
-  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="icon" href="public/logo.png">
 </head>
 <body>
   <header>
-    <a href="index.html"><img src="logo.png" alt="Logo" class="logo"></a>
-    <h1 class="site-title">সাহিত্যপাতা</h1>
+    <div class="header-container container">
+      <div class="logo">
+        <a href="index.html">
+          <img src="public/logo.png" alt="সাহিত্যপাতা">
+        </a>
+        <h1>সাহিত্যপাতা</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">হোম</a>
+        <a href="index.html?category=poetry">কবিতা</a>
+        <a href="index.html?category=novel">উপন্যাস</a>
+        <a href="index.html?category=short-story">ছোটগল্প</a>
+        <a href="index.html?category=essay">প্রবন্ধ</a>
+        <a href="index.html?category=humor">রম্যরচনা</a>
+        <a href="index.html?category=ghost-story">ভৌতিক গল্প</a>
+        <a href="index.html?category=memoir">স্মৃতিকথা</a>
+        <a href="create-post.html">নতুন পোস্ট</a>
+        <a href="admin.html" id="adminLink" style="display: none;">অ্যাডমিন</a>
+      </nav>
+      <div class="user-menu" id="userMenu" style="display: none;">
+        <button id="themeToggle" class="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="profile.html">
+          <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" id="userProfilePic">
+        </a>
+        <button id="logoutBtn" class="logout-btn">লগআউট</button>
+      </div>
+      <button id="loginBtn" class="login-btn">লগইন</button>
+    </div>
   </header>
+
+  <div id="alertContainer"></div>
 
   <main class="container">
     <!-- লোডিং স্পিনার -->
-    <div id="loadingSpinner" class="loading-spinner" style="display: none;">লোড হচ্ছে...</div>
+    <div id="loadingSpinner" class="spinner" style="display: none;"></div>
 
     <!-- পোস্ট কন্টেইনার -->
     <div id="postContainer" class="single-post-container"></div>
@@ -26,20 +57,42 @@
       <h2>মন্তব্য করুন</h2>
       <form id="commentForm" class="comment-form">
         <textarea name="comment" placeholder="আপনার মন্তব্য লিখুন..." required></textarea>
-        <button type="submit">মন্তব্য পাঠান</button>
+        <button type="submit" class="cta-button">মন্তব্য পাঠান</button>
       </form>
       <div id="commentsContainer" class="comments-container"></div>
     </section>
   </main>
 
   <footer>
-    <p>&copy; ২০২৫ সাহিত্যপাতা | সর্বস্বত্ব সংরক্ষিত</p>
+    <div class="footer-content container">
+      <div class="footer-links">
+        <a href="index.html">হোম</a>
+        <a href="create-post.html">নতুন পোস্ট</a>
+        <a href="profile.html">প্রোফাইল</a>
+        <a href="#">যোগাযোগ</a>
+      </div>
+      <div class="copyright">
+        &copy; 2024 সাহিত্যপাতা। সর্বস্বত্ব সংরক্ষিত।
+      </div>
+    </div>
   </footer>
 
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
   <script type="module" src="js/post.js"></script>
+
+  <!-- Add this to enable login button navigation -->
   <script>
+    document.getElementById("loginBtn").addEventListener("click", function() {
+      window.location.href = "login.html";
+    });
+    
     // পেজ লোড হলে initPost() চালু করো
-    window.addEventListener('DOMContentLoaded', initPost);
+    window.addEventListener('DOMContentLoaded', function() {
+      if (typeof initPost === 'function') {
+        initPost();
+      }
+    });
   </script>
 </body>
 </html>

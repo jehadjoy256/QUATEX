@@ -14,8 +14,13 @@ const userDisplayName = document.getElementById('userDisplayName');
 let currentUser = null;
 const adminEmails = ['joyjehad28@gmail.com', 'jehadjoy44@gmail.com'];
 
+// নতুন: auth স্টেট চেক করার ফ্ল্যাগ
+let authChecked = false;
+
 // Check if user is logged in
 onAuthStateChanged(auth, async (user) => {
+  authChecked = true;
+
   if (user) {
     currentUser = user;
     
@@ -150,6 +155,10 @@ function showAlert(message, type) {
 
 // Check if user is logged in and redirect if not
 function checkAuth() {
+  if (!authChecked) {
+    // এখনো auth state পাওয়া যায় নি, তাই redirect দিবেন না
+    return;
+  }
   if (!currentUser) {
     window.location.href = 'login.html';
   }

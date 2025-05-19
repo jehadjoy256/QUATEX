@@ -11,15 +11,18 @@ const tabContents = document.querySelectorAll('.tab-content');
 const loadingSpinner = document.getElementById('loadingSpinner');
 const alertContainer = document.getElementById('alertContainer');
 
+let loggedInUserId = null;
+
 // Initialize profile page
 async function initProfile() {
   try {
     showLoading(true);
-    
-    // Get user ID from URL or current user
+
+    // Get current user
+    loggedInUserId = await getCurrentUserId();
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id') || await getCurrentUserId();
-    
+    const userId = urlParams.get('id') || loggedInUserId;
+
     if (!userId) {
       window.location.href = 'login.html';
       return;
@@ -29,14 +32,14 @@ async function initProfile() {
       loadUserProfile(userId),
       loadUserPosts(userId)
     ]);
-    
+
   } catch (error) {
     console.error('Profile initialization error:', error);
     showAlert('প্রোফাইল লোড করতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।', 'error');
   } finally {
     showLoading(false);
   }
-  
+
   setupProfileTabs();
 }
 
@@ -72,12 +75,12 @@ async function loadUserProfile(userId) {
   try {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
-    
+
     if (!userSnap.exists()) {
       throw new Error('User not found');
     }
-    
-    renderProfile(userSnap.data());
+
+    renderProfile(userSnap.data(), userId);
   } catch (error) {
     console.error('Error loading profile:', error);
     showAlert('ব্যবহারকারীর তথ্য লোড করতে সমস্যা হয়েছে।', 'error');
@@ -85,7 +88,7 @@ async function loadUserProfile(userId) {
   }
 }
 
-function renderProfile(userData) {
+function renderProfile(userData, userId) {
   profileContainer.innerHTML = `
     <div class="profile-header">
       <img src="${userData.photoURL || 'https://via.placeholder.com/150'}" 
@@ -110,7 +113,7 @@ function renderProfile(userData) {
         </div>
       </div>
     </div>
-    ${auth.currentUser?.uid === userId ? `
+    ${loggedInUserId === userId ? `
     <div class="profile-actions">
       <a href="edit-profile.html" class="edit-profile-btn">প্রোফাইল সম্পাদনা</a>
     </div>
@@ -134,34 +137,34 @@ function renderProfileError() {
 async function loadUserPosts(userId) {
   try {
     postsContainer.innerHTML = '<div class="spinner small"></div>';
-    
+
     const postsQuery = query(
       collection(db, "posts"),
       where("authorId", "==", userId),
       orderBy("createdAt", "desc")
     );
-    
+
     const querySnapshot = await getDocs(postsQuery);
-    
+
     if (querySnapshot.empty) {
       postsContainer.innerHTML = `
         <div class="no-posts">
           <i class="fas fa-book-open"></i>
           <p>এই ব্যবহারকারীর কোনো পোস্ট নেই</p>
-          ${auth.currentUser?.uid === userId ? `
+          ${loggedInUserId === userId ? `
           <a href="create-post.html" class="cta-button">নতুন পোস্ট লিখুন</a>
           ` : ''}
         </div>
       `;
       return;
     }
-    
+
     postsContainer.innerHTML = '';
-    
+
     querySnapshot.forEach(doc => {
       const post = doc.data();
       const postDate = formatPostDate(post.createdAt);
-      
+
       postsContainer.innerHTML += `
         <div class="post-card">
           <div class="post-header">
@@ -261,7 +264,6 @@ function showAlert(message, type = 'error') {
     <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
     <span>${message}</span>
   `;
-  
   alertContainer.appendChild(alert);
   setTimeout(() => alert.remove(), 5000);
 }

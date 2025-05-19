@@ -65,9 +65,13 @@ async function login() {
     const result = await signInWithPopup(auth, provider);
     showAlert('Login successful!', 'success');
     
-    // Redirect to homepage if on login page
+    // Redirect to appropriate page after login
     if (window.location.pathname.includes('login.html')) {
-      window.location.href = 'index.html';
+      if (adminEmails.includes(result.user.email)) {
+        window.location.href = 'admin.html';  // admin হলে admin পেজে যাবে
+      } else {
+        window.location.href = 'index.html';  // সাধারণ ইউজার হলে হোমপেজে যাবে
+      }
     }
   } catch (error) {
     console.error('Login error:', error);
@@ -172,8 +176,11 @@ async function checkAdmin() {
   }
   
   if (!adminEmails.includes(currentUser.email)) {
-    window.location.href = 'index.html';
+    // **alert দেখানোর আগে redirect করলে alert দেখাবে না, তাই আগে দেখাবো তারপর redirect করব**
     showAlert('You do not have permission to access this page.', 'error');
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1500);  // 1.5 সেকেন্ড দেরি করে redirect
   }
 }
 

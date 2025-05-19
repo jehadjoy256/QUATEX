@@ -1,93 +1,3 @@
-<!DOCTYPE html>
-<html lang="bn">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>প্রোফাইল - সাহিত্যপাতা</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
-</head>
-<body>
-  <header>
-    <div class="header-container container">
-      <div class="logo">
-        <a href="index.html">
-          <img src="public/logo.png" alt="সাহিত্যপাতা">
-        </a>
-        <h1>সাহিত্যপাতা</h1>
-      </div>
-      <nav class="nav-links">
-        <a href="index.html">হোম</a>
-        <a href="index.html?category=poetry">কবিতা</a>
-        <a href="index.html?category=novel">উপন্যাস</a>
-        <a href="index.html?category=short-story">ছোটগল্প</a>
-        <a href="index.html?category=essay">প্রবন্ধ</a>
-        <a href="index.html?category=humor">রম্যরচনা</a>
-        <a href="index.html?category=ghost-story">ভৌতিক গল্প</a>
-        <a href="index.html?category=memoir">স্মৃতিকথা</a>
-        <a href="create-post.html">নতুন পোস্ট</a>
-        <a href="admin.html" id="adminLink" style="display: none;">অ্যাডমিন</a>
-      </nav>
-      <div class="user-menu" id="userMenu" style="display: none;">
-        <button id="themeToggle" class="theme-toggle">
-          <i class="fas fa-moon"></i>
-        </button>
-        <a href="profile.html">
-          <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" id="userProfilePic">
-        </a>
-        <button id="logoutBtn" class="logout-btn">লগআউট</button>
-      </div>
-      <button id="loginBtn" class="login-btn">লগইন</button>
-    </div>
-  </header>
-
-  <div id="alertContainer"></div>
-
-  <main>
-    <section class="container">
-      <div id="profileContainer">
-        <!-- Profile will be loaded here -->
-      </div>
-
-      <div class="profile-tabs">
-        <div class="tab active" data-tab="userPosts">পোস্ট</div>
-        <div class="tab" data-tab="userLikes">পছন্দ</div>
-      </div>
-
-      <div id="userPosts" class="tab-content" style="display: block;">
-        <!-- User posts will be loaded here -->
-      </div>
-
-      <div id="userLikes" class="tab-content" style="display: none;">
-        <!-- User likes will be loaded here -->
-        <p class="text-center">এই ফিচারটি শীঘ্রই আসছে।</p>
-      </div>
-
-      <div class="spinner" id="loadingSpinner"></div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="footer-content container">
-      <div class="footer-links">
-        <a href="index.html">হোম</a>
-        <a href="create-post.html">নতুন পোস্ট</a>
-        <a href="profile.html">প্রোফাইল</a>
-        <a href="#">যোগাযোগ</a>
-      </div>
-      <div class="copyright">
-        &copy; 2024 সাহিত্যপাতা। সর্বস্বত্ব সংরক্ষিত।
-      </div>
-    </div>
-  </footer>
-
-  <script type="module" src="js/firebase.js"></script>
-  <script type="module" src="js/auth.js"></script>
-  <script type="module" src="js/profile.js"></script>
-</body>
-</html>
-profile.js
 // js/profile.js
 import { auth, db } from './firebase.js';
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.11.0/firebase-auth.js";
@@ -99,178 +9,229 @@ const postsContainer = document.getElementById('userPosts');
 const profileTabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
 const loadingSpinner = document.getElementById('loadingSpinner');
-
-// Current user
-let currentUser = null;
-let currentUserId = null;
+const alertContainer = document.getElementById('alertContainer');
 
 // Initialize profile page
 async function initProfile() {
-  // Show loading spinner
-  if (loadingSpinner) loadingSpinner.style.display = 'block';
-  
-  // Get user ID from URL if available
-  const urlParams = new URLSearchParams(window.location.search);
-  const userId = urlParams.get('id');
-  
-  onAuthStateChanged(auth, async (user) => {
-    if (user) {
-      currentUser = user;
-      
-      // If no user ID in URL, show current user's profile
-      if (!userId) {
-        currentUserId = user.uid;
-        await loadUserProfile(user.uid);
-        await loadUserPosts(user.uid);
-      } else {
-        currentUserId = userId;
-        await loadUserProfile(userId);
-        await loadUserPosts(userId);
-      }
-    } else {
-      // If not logged in and no user ID in URL, redirect to login
-      if (!userId) {
-        window.location.href = 'login.html';
-      } else {
-        currentUserId = userId;
-        await loadUserProfile(userId);
-        await loadUserPosts(userId);
-      }
-    }
+  try {
+    showLoading(true);
     
-    // Hide loading spinner
-    if (loadingSpinner) loadingSpinner.style.display = 'none';
-  });
+    // Get user ID from URL or current user
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('id') || await getCurrentUserId();
+    
+    if (!userId) {
+      window.location.href = 'login.html';
+      return;
+    }
+
+    await Promise.all([
+      loadUserProfile(userId),
+      loadUserPosts(userId)
+    ]);
+    
+  } catch (error) {
+    console.error('Profile initialization error:', error);
+    showAlert('প্রোফাইল লোড করতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।', 'error');
+  } finally {
+    showLoading(false);
+  }
   
-  // Add event listeners to tabs
-  profileTabs.forEach(tab => {
-    tab.addEventListener('click', () => {
-      // Remove active class from all tabs
-      profileTabs.forEach(t => t.classList.remove('active'));
-      
-      // Add active class to clicked tab
-      tab.classList.add('active');
-      
-      // Hide all tab contents
-      tabContents.forEach(content => content.style.display = 'none');
-      
-      // Show selected tab content
-      const tabId = tab.getAttribute('data-tab');
-      document.getElementById(tabId).style.display = 'block';
+  setupProfileTabs();
+}
+
+async function getCurrentUserId() {
+  return new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        resolve(user.uid);
+      } else {
+        resolve(null);
+      }
     });
   });
 }
 
-// Load user profile
+function showLoading(show) {
+  if (loadingSpinner) loadingSpinner.style.display = show ? 'block' : 'none';
+}
+
+function setupProfileTabs() {
+  profileTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      profileTabs.forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      tabContents.forEach(content => content.style.display = 'none');
+      document.getElementById(tab.dataset.tab).style.display = 'block';
+    });
+  });
+}
+
+// Load user profile data
 async function loadUserProfile(userId) {
   try {
     const userRef = doc(db, "users", userId);
     const userSnap = await getDoc(userRef);
     
-    if (userSnap.exists()) {
-      const userData = userSnap.data();
-      
-      // Update profile UI
-      updateProfileUI(userData);
-    } else {
-      showAlert('User not found.', 'error');
+    if (!userSnap.exists()) {
+      throw new Error('User not found');
     }
+    
+    renderProfile(userSnap.data());
   } catch (error) {
     console.error('Error loading profile:', error);
-    showAlert('Failed to load profile. Please try again.', 'error');
+    showAlert('ব্যবহারকারীর তথ্য লোড করতে সমস্যা হয়েছে।', 'error');
+    renderProfileError();
   }
 }
 
-// Update profile UI
-function updateProfileUI(userData) {
-  if (!profileContainer) return;
-  
-  // Create profile HTML
-  const profileHTML = `
+function renderProfile(userData) {
+  profileContainer.innerHTML = `
     <div class="profile-header">
-      <img src="${userData.photoURL || 'https://via.placeholder.com/100'}" alt="${userData.displayName}" class="profile-avatar">
+      <img src="${userData.photoURL || 'https://via.placeholder.com/150'}" 
+           alt="${userData.displayName || 'User'}" 
+           class="profile-avatar">
       <div class="profile-info">
-        <h2>${userData.displayName}</h2>
-        <p>${userData.email}</p>
+        <h2>${userData.displayName || 'ব্যবহারকারী'}</h2>
+        ${userData.email ? `<p class="profile-email">${userData.email}</p>` : ''}
         <div class="profile-stats">
           <div class="stat">
-            <div class="stat-value">${userData.postCount || 0}</div>
-            <div class="stat-label">পোস্ট</div>
+            <span class="stat-value">${userData.postCount || 0}</span>
+            <span class="stat-label">পোস্ট</span>
           </div>
           <div class="stat">
-            <div class="stat-value">${userData.role}</div>
-            <div class="stat-label">ভূমিকা</div>
+            <span class="stat-value">${getRoleName(userData.role)}</span>
+            <span class="stat-label">ভূমিকা</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">${userData.joinedDate ? formatDate(userData.joinedDate) : 'অজানা'}</span>
+            <span class="stat-label">যোগদান</span>
           </div>
         </div>
       </div>
     </div>
+    ${auth.currentUser?.uid === userId ? `
+    <div class="profile-actions">
+      <a href="edit-profile.html" class="edit-profile-btn">প্রোফাইল সম্পাদনা</a>
+    </div>
+    ` : ''}
   `;
-  
-  profileContainer.innerHTML = profileHTML;
+}
+
+function renderProfileError() {
+  profileContainer.innerHTML = `
+    <div class="profile-error">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>প্রোফাইল লোড করা যায়নি</p>
+      <button onclick="window.location.reload()" class="retry-btn">
+        <i class="fas fa-sync-alt"></i> আবার চেষ্টা করুন
+      </button>
+    </div>
+  `;
 }
 
 // Load user posts
 async function loadUserPosts(userId) {
   try {
-    if (!postsContainer) return;
+    postsContainer.innerHTML = '<div class="spinner small"></div>';
     
-    // Clear posts container
-    postsContainer.innerHTML = '';
-    
-    // Get user posts
     const postsQuery = query(
       collection(db, "posts"),
       where("authorId", "==", userId),
       orderBy("createdAt", "desc")
     );
     
-    const postsSnap = await getDocs(postsQuery);
+    const querySnapshot = await getDocs(postsQuery);
     
-    if (postsSnap.empty) {
-      postsContainer.innerHTML = '<p class="text-center">কোন পোস্ট নেই।</p>';
+    if (querySnapshot.empty) {
+      postsContainer.innerHTML = `
+        <div class="no-posts">
+          <i class="fas fa-book-open"></i>
+          <p>এই ব্যবহারকারীর কোনো পোস্ট নেই</p>
+          ${auth.currentUser?.uid === userId ? `
+          <a href="create-post.html" class="cta-button">নতুন পোস্ট লিখুন</a>
+          ` : ''}
+        </div>
+      `;
       return;
     }
     
-    // Create posts HTML
-    postsSnap.forEach(doc => {
+    postsContainer.innerHTML = '';
+    
+    querySnapshot.forEach(doc => {
       const post = doc.data();
-      const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
+      const postDate = formatPostDate(post.createdAt);
       
-      const postHTML = `
-        <div class="card post-card">
+      postsContainer.innerHTML += `
+        <div class="post-card">
           <div class="post-header">
-            <img src="${post.authorPhotoURL || 'https://via.placeholder.com/40'}" alt="${post.authorName}" class="post-author-pic">
+            <img src="${post.authorPhotoURL || 'https://via.placeholder.com/40'}" 
+                 alt="${post.authorName}" 
+                 class="post-author-avatar">
             <div class="post-meta">
-              <div class="post-author">${post.authorName}</div>
-              <div class="post-date">${postDate.toLocaleDateString('bn-BD')}</div>
+              <h3 class="post-title">${post.title || 'নামবিহীন পোস্ট'}</h3>
+              <div class="post-details">
+                <span class="post-category ${post.category || ''}">
+                  ${getCategoryName(post.category)}
+                </span>
+                <span class="post-date">${postDate}</span>
+              </div>
             </div>
           </div>
           <div class="post-content">
-            <h3 class="post-title">${post.title}</h3>
-            <div class="post-category">${getCategoryName(post.category)}</div>
-            <p class="post-excerpt">${post.content.substring(0, 150)}${post.content.length > 150 ? '...' : ''}</p>
-            <a href="post.html?id=${doc.id}" class="cta-button">পুরো পোস্ট পড়ুন</a>
+            <p>${truncateContent(post.content)}</p>
+            <a href="post.html?id=${doc.id}" class="read-more">পুরো পড়ুন</a>
           </div>
-          <div class="post-actions">
-            <button class="action-btn">
-              <i class="far fa-heart"></i> ${post.likes ? post.likes.length : 0}
-            </button>
-            <button class="action-btn">
-              <i class="far fa-comment"></i> ${post.commentCount || 0}
-            </button>
+          <div class="post-footer">
+            <span class="post-likes">
+              <i class="fas fa-heart"></i> ${post.likes?.length || 0}
+            </span>
+            <span class="post-comments">
+              <i class="fas fa-comment"></i> ${post.commentCount || 0}
+            </span>
           </div>
         </div>
       `;
-      
-      postsContainer.innerHTML += postHTML;
     });
   } catch (error) {
     console.error('Error loading posts:', error);
-    showAlert('Failed to load posts. Please try again.', 'error');
+    postsContainer.innerHTML = `
+      <div class="posts-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>পোস্ট লোড করতে সমস্যা হয়েছে</p>
+        <button onclick="loadUserPosts('${userId}')" class="retry-btn">
+          <i class="fas fa-sync-alt"></i> আবার চেষ্টা করুন
+        </button>
+      </div>
+    `;
   }
 }
 
-// Get category name in Bangla
+// Helper functions
+function formatPostDate(timestamp) {
+  if (!timestamp?.toDate) return 'তারিখ নেই';
+  const date = timestamp.toDate();
+  return date.toLocaleDateString('bn-BD', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+}
+
+function formatDate(date) {
+  if (date?.toDate) {
+    return date.toDate().toLocaleDateString('bn-BD');
+  }
+  return typeof date === 'string' ? date : 'অজানা';
+}
+
+function truncateContent(content, maxLength = 200) {
+  if (!content) return '';
+  return content.length > maxLength 
+    ? content.substring(0, maxLength) + '...' 
+    : content;
+}
+
 function getCategoryName(category) {
   const categories = {
     'poetry': 'কবিতা',
@@ -281,28 +242,29 @@ function getCategoryName(category) {
     'ghost-story': 'ভৌতিক গল্প',
     'memoir': 'স্মৃতিকথা'
   };
-  
-  return categories[category] || category;
+  return categories[category] || category || 'সাধারণ';
 }
 
-// Show alert message
-function showAlert(message, type) {
-  const alertContainer = document.getElementById('alertContainer');
-  if (!alertContainer) return;
-  
+function getRoleName(role) {
+  const roles = {
+    'admin': 'প্রশাসক',
+    'author': 'লেখক',
+    'user': 'ব্যবহারকারী'
+  };
+  return roles[role] || role || 'ব্যবহারকারী';
+}
+
+function showAlert(message, type = 'error') {
   const alert = document.createElement('div');
   alert.className = `alert alert-${type}`;
-  alert.textContent = message;
+  alert.innerHTML = `
+    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
+    <span>${message}</span>
+  `;
   
   alertContainer.appendChild(alert);
-  
-  // Remove alert after 3 seconds
-  setTimeout(() => {
-    alert.remove();
-  }, 3000);
+  setTimeout(() => alert.remove(), 5000);
 }
 
-// Initialize profile page when DOM is loaded
+// Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', initProfile);
-
-export { loadUserProfile, loadUserPosts };

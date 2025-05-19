@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>অ্যাডমিন - সাহিত্যপাতা</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-container container">
+      <div class="logo">
+        <a href="index.html">
+          <img src="public/logo.png" alt="সাহিত্যপাতা">
+        </a>
+        <h1>সাহিত্যপাতা</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">হোম</a>
+        <a href="create-post.html">নতুন পোস্ট</a>
+        <a href="profile.html">প্রোফাইল</a>
+        <a href="admin.html" class="active">অ্যাডমিন</a>
+      </nav>
+      <div class="user-menu" id="userMenu" style="display: none;">
+        <button id="themeToggle" class="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="profile.html">
+          <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" id="userProfilePic">
+        </a>
+        <button id="logoutBtn" class="logout-btn">লগআউট</button>
+      </div>
+      <button id="loginBtn" class="login-btn">লগইন</button>
+    </div>
+  </header>
+
+  <div id="alertContainer"></div>
+
+  <main>
+    <section class="container">
+      <h2>অ্যাডমিন প্যানেল</h2>
+      
+      <div class="admin-tabs">
+        <div class="tab active" data-tab="pendingPostsTab">অপেক্ষমান পোস্ট</div>
+        <div class="tab" data-tab="approvedPostsTab">অনুমোদিত পোস্ট</div>
+        <div class="tab" data-tab="usersTab">ব্যবহারকারী</div>
+      </div>
+      
+      <div id="pendingPostsTab" class="tab-content" style="display: block;">
+        <div id="pendingPosts">
+          <!-- Pending posts will be loaded here -->
+        </div>
+      </div>
+      
+      <div id="approvedPostsTab" class="tab-content" style="display: none;">
+        <div id="approvedPosts">
+          <!-- Approved posts will be loaded here -->
+        </div>
+      </div>
+      
+      <div id="usersTab" class="tab-content" style="display: none;">
+        <div id="users">
+          <!-- Users will be loaded here -->
+        </div>
+      </div>
+      
+      <div class="spinner" id="loadingSpinner"></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content container">
+      <div class="footer-links">
+        <a href="index.html">হোম</a>
+        <a href="create-post.html">নতুন পোস্ট</a>
+        <a href="profile.html">প্রোফাইল</a>
+        <a href="#">যোগাযোগ</a>
+      </div>
+      <div class="copyright">
+        &copy; 2024 সাহিত্যপাতা। সর্বস্বত্ব সংরক্ষিত।
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/admin.js"></script>
+  <script type="module">
+    import { checkAdmin } from './js/auth.js';
+    
+    // Check if user is admin
+    document.addEventListener('DOMContentLoaded', checkAdmin);
+  </script>
+</body>
+</html>

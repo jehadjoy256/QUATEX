@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>সাহিত্যপাতা - বাংলা সাহিত্যের আঙ্গিনা</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header>
+    <div class="header-container container">
+      <div class="logo">
+        <a href="index.html">
+          <img src="public/logo.png" alt="সাহিত্যপাতা">
+        </a>
+        <h1>সাহিত্যপাতা</h1>
+      </div>
+      <nav class="nav-links">
+        <a href="index.html">হোম</a>
+        <a href="index.html?category=poetry">কবিতা</a>
+        <a href="index.html?category=novel">উপন্যাস</a>
+        <a href="index.html?category=short-story">ছোটগল্প</a>
+        <a href="index.html?category=essay">প্রবন্ধ</a>
+        <a href="index.html?category=humor">রম্যরচনা</a>
+        <a href="index.html?category=ghost-story">ভৌতিক গল্প</a>
+        <a href="index.html?category=memoir">স্মৃতিকথা</a>
+        <a href="create-post.html">নতুন পোস্ট</a>
+        <a href="admin.html" id="adminLink" style="display: none;">অ্যাডমিন</a>
+      </nav>
+      <div class="user-menu" id="userMenu" style="display: none;">
+        <button id="themeToggle" class="theme-toggle">
+          <i class="fas fa-moon"></i>
+        </button>
+        <a href="profile.html">
+          <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" id="userProfilePic">
+        </a>
+        <button id="logoutBtn" class="logout-btn">লগআউট</button>
+      </div>
+      <button id="loginBtn" class="login-btn">লগইন</button>
+    </div>
+  </header>
+
+  <div id="alertContainer"></div>
+
+  <main>
+    <section class="hero">
+      <div class="container">
+        <h2>বাংলা সাহিত্যের আঙ্গিনায় আপনাকে স্বাগতম</h2>
+        <p>সাহিত্যপাতা হল বাংলা সাহিত্যের একটি অনলাইন প্লাটফর্ম যেখানে আপনি আপনার লেখা শেয়ার করতে পারেন এবং অন্যদের লেখা পড়তে পারেন।</p>
+        <a href="create-post.html" class="cta-button">নতুন পোস্ট লিখুন</a>
+      </div>
+    </section>
+
+    <section class="container">
+      <div class="filter-container">
+        <select id="categoryFilter" class="category-filter">
+          <option value="">সব বিভাগ</option>
+          <option value="poetry">কবিতা</option>
+          <option value="novel">উপন্যাস</option>
+          <option value="short-story">ছোটগল্প</option>
+          <option value="essay">প্রবন্ধ</option>
+          <option value="humor">রম্যরচনা</option>
+          <option value="ghost-story">ভৌতিক গল্প</option>
+          <option value="memoir">স্মৃতিকথা</option>
+        </select>
+      </div>
+
+      <div id="postsGrid" class="post-grid">
+        <!-- Posts will be loaded here -->
+      </div>
+
+      <div class="spinner" id="loadingSpinner"></div>
+
+      <div class="load-more-container text-center">
+        <button id="loadMoreBtn" class="cta-button">আরও দেখুন</button>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="footer-content container">
+      <div class="footer-links">
+        <a href="index.html">হোম</a>
+        <a href="create-post.html">নতুন পোস্ট</a>
+        <a href="profile.html">প্রোফাইল</a>
+        <a href="#">যোগাযোগ</a>
+      </div>
+      <div class="copyright">
+        &copy; 2024 সাহিত্যপাতা। সর্বস্বত্ব সংরক্ষিত।
+      </div>
+    </div>
+  </footer>
+
+  <script type="module" src="js/firebase.js"></script>
+  <script type="module" src="js/auth.js"></script>
+  <script type="module" src="js/post.js"></script>
+</body>
+</html>

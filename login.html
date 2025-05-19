@@ -1,19 +1,25 @@
 <!DOCTYPE html>
 <html lang="bn">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>লগইন - সাহিত্যপাতা</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Hind+Siliguri:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body>
   <header>
     <div class="header-container container">
       <div class="logo">
         <a href="index.html">
-          <img src="public/logo.png" alt="সাহিত্যপাতা">
+          <img src="public/logo.png" alt="সাহিত্যপাতা" />
         </a>
         <h1>সাহিত্যপাতা</h1>
       </div>
@@ -28,11 +34,16 @@
         <a href="index.html?category=memoir">স্মৃতিকথা</a>
       </nav>
       <div class="user-menu" id="userMenu" style="display: none;">
-        <button id="themeToggle" class="theme-toggle">
+        <button id="themeToggle" class="theme-toggle" title="ডার্ক মোড চালু/বন্ধ করুন">
           <i class="fas fa-moon"></i>
         </button>
         <a href="profile.html">
-          <img src="https://via.placeholder.com/40" alt="Profile" class="profile-pic" id="userProfilePic">
+          <img
+            src="https://via.placeholder.com/40"
+            alt="Profile"
+            class="profile-pic"
+            id="userProfilePic"
+          />
         </a>
         <button id="logoutBtn" class="logout-btn">লগআউট</button>
       </div>
@@ -47,15 +58,20 @@
       <div class="form-container">
         <div class="card">
           <h2 class="text-center">লগইন করুন</h2>
-          <p class="text-center">সাহিত্যপাতায় আপনাকে স্বাগতম। আপনার Google অ্যাকাউন্ট দিয়ে লগইন করুন।</p>
-          
+          <p class="text-center">
+            সাহিত্যপাতায় আপনাকে স্বাগতম। আপনার Google অ্যাকাউন্ট দিয়ে লগইন করুন।
+          </p>
+
           <div class="text-center" style="margin: 30px 0;">
             <button id="googleLoginBtn" class="cta-button">
               <i class="fab fa-google"></i> Google দিয়ে লগইন করুন
             </button>
           </div>
-          
-          <p class="text-center">লগইন করে আপনি আমাদের <a href="#">শর্তাবলী</a> এবং <a href="#">গোপনীয়তা নীতি</a> মেনে নিচ্ছেন।</p>
+
+          <p class="text-center">
+            লগইন করে আপনি আমাদের
+            <a href="#">শর্তাবলী</a> এবং <a href="#">গোপনীয়তা নীতি</a> মেনে নিচ্ছেন।
+          </p>
         </div>
       </div>
     </section>
@@ -69,17 +85,20 @@
         <a href="profile.html">প্রোফাইল</a>
         <a href="#">যোগাযোগ</a>
       </div>
-      <div class="copyright">
-        &copy; 2024 সাহিত্যপাতা। সর্বস্বত্ব সংরক্ষিত।
-      </div>
+      <div class="copyright">&copy; ২০২৪ সাহিত্যপাতা। সর্বস্বত্ব সংরক্ষিত।</div>
     </div>
   </footer>
 
- <script type="module" src="js/auth.js"></script>
+  <!-- Load your auth.js as a module -->
+  <script type="module" src="js/auth.js"></script>
+
+  <!-- Import and use login function -->
   <script type="module">
-    import { login } from './js/auth.js';
-    
-    document.getElementById('googleLoginBtn').addEventListener('click', login);
+    import { login } from "./js/auth.js";
+
+    document
+      .getElementById("googleLoginBtn")
+      .addEventListener("click", login);
   </script>
 </body>
 </html>

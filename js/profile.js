@@ -9,51 +9,64 @@ const postsContainer = document.getElementById('userPosts');
 const profileTabs = document.querySelectorAll('.tab');
 const tabContents = document.querySelectorAll('.tab-content');
 const loadingSpinner = document.getElementById('loadingSpinner');
+const alertContainer = document.getElementById('alertContainer');
 
 // Initialize profile page
 async function initProfile() {
   try {
-    loadingSpinner.style.display = 'block';
+    showLoading(true);
     
     // Get user ID from URL or current user
     const urlParams = new URLSearchParams(window.location.search);
-    const userId = urlParams.get('id');
+    const userId = urlParams.get('id') || await getCurrentUserId();
     
-    // Check if we have a user ID to display
-    if (userId) {
-      await loadUserProfile(userId);
-      await loadUserPosts(userId);
-    } else {
-      // No user ID in URL - check auth state
-      onAuthStateChanged(auth, async (user) => {
-        if (user) {
-          await loadUserProfile(user.uid);
-          await loadUserPosts(user.uid);
-        } else {
-          window.location.href = 'login.html';
-        }
-      });
+    if (!userId) {
+      window.location.href = 'login.html';
+      return;
     }
+
+    await Promise.all([
+      loadUserProfile(userId),
+      loadUserPosts(userId)
+    ]);
+    
   } catch (error) {
     console.error('Profile initialization error:', error);
     showAlert('প্রোফাইল লোড করতে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।', 'error');
   } finally {
-    loadingSpinner.style.display = 'none';
+    showLoading(false);
   }
   
-  // Tab switching functionality
   setupProfileTabs();
 }
 
-// Set up tab switching
+async function getCurrentUserId() {
+  return new Promise((resolve) => {
+    onAuthStateChanged(auth, (user) => {
+      resolve(user?.uid || null);
+    });
+  });
+}
+
+function showLoading(show) {
+  if (loadingSpinner) loadingSpinner.style.display = show ? 'block' : 'none';
+}
+
 function setupProfileTabs() {
   profileTabs.forEach(tab => {
     tab.addEventListener('click', () => {
+      // Remove active class from all tabs
       profileTabs.forEach(t => t.classList.remove('active'));
+      
+      // Add active class to clicked tab
       tab.classList.add('active');
       
+      // Hide all tab contents
       tabContents.forEach(content => content.style.display = 'none');
-      document.getElementById(tab.dataset.tab).style.display = 'block';
+      
+      // Show selected tab content
+      const tabId = tab.getAttribute('data-tab');
+      document.getElementById(tabId).style.display = 'block';
     });
   });
 }
@@ -68,16 +81,14 @@ async function loadUserProfile(userId) {
       throw new Error('User not found');
     }
     
-    const userData = userSnap.data();
-    renderProfile(userData);
+    renderProfile(userSnap.data());
   } catch (error) {
     console.error('Error loading profile:', error);
     showAlert('ব্যবহারকারীর তথ্য লোড করতে সমস্যা হয়েছে।', 'error');
-    profileContainer.innerHTML = `<p class="error-message">প্রোফাইল লোড করা যায়নি</p>`;
+    renderProfileError();
   }
 }
 
-// Render profile UI
 function renderProfile(userData) {
   profileContainer.innerHTML = `
     <div class="profile-header">
@@ -86,18 +97,39 @@ function renderProfile(userData) {
            class="profile-avatar">
       <div class="profile-info">
         <h2>${userData.displayName || 'ব্যবহারকারী'}</h2>
-        ${userData.email ? `<p>${userData.email}</p>` : ''}
+        ${userData.email ? `<p class="profile-email">${userData.email}</p>` : ''}
         <div class="profile-stats">
           <div class="stat">
             <span class="stat-value">${userData.postCount || 0}</span>
             <span class="stat-label">পোস্ট</span>
           </div>
           <div class="stat">
-            <span class="stat-value">${userData.role || 'পাঠক'}</span>
+            <span class="stat-value">${getRoleName(userData.role)}</span>
             <span class="stat-label">ভূমিকা</span>
+          </div>
+          <div class="stat">
+            <span class="stat-value">${userData.joinedDate ? formatDate(userData.joinedDate) : 'অজানা'}</span>
+            <span class="stat-label">যোগদান</span>
           </div>
         </div>
       </div>
+    </div>
+    ${auth.currentUser?.uid === currentUserId ? `
+    <div class="profile-actions">
+      <a href="edit-profile.html" class="edit-profile-btn">প্রোফাইল সম্পাদনা</a>
+    </div>
+    ` : ''}
+  `;
+}
+
+function renderProfileError() {
+  profileContainer.innerHTML = `
+    <div class="profile-error">
+      <i class="fas fa-exclamation-circle"></i>
+      <p>প্রোফাইল লোড করা যায়নি</p>
+      <button onclick="window.location.reload()" class="retry-btn">
+        <i class="fas fa-sync-alt"></i> আবার চেষ্টা করুন
+      </button>
     </div>
   `;
 }
@@ -105,7 +137,7 @@ function renderProfile(userData) {
 // Load user posts
 async function loadUserPosts(userId) {
   try {
-    postsContainer.innerHTML = '<div class="spinner"></div>';
+    postsContainer.innerHTML = '<div class="spinner small"></div>';
     
     const postsQuery = query(
       collection(db, "posts"),
@@ -116,7 +148,15 @@ async function loadUserPosts(userId) {
     const querySnapshot = await getDocs(postsQuery);
     
     if (querySnapshot.empty) {
-      postsContainer.innerHTML = '<p class="no-posts">এই ব্যবহারকারীর কোনো পোস্ট নেই</p>';
+      postsContainer.innerHTML = `
+        <div class="no-posts">
+          <i class="fas fa-book-open"></i>
+          <p>এই ব্যবহারকারীর কোনো পোস্ট নেই</p>
+          ${auth.currentUser?.uid === userId ? `
+          <a href="create-post.html" class="cta-button">নতুন পোস্ট লিখুন</a>
+          ` : ''}
+        </div>
+      `;
       return;
     }
     
@@ -124,7 +164,7 @@ async function loadUserPosts(userId) {
     
     querySnapshot.forEach(doc => {
       const post = doc.data();
-      const postDate = getPostDate(post.createdAt);
+      const postDate = formatPostDate(post.createdAt);
       
       postsContainer.innerHTML += `
         <div class="post-card">
@@ -160,40 +200,42 @@ async function loadUserPosts(userId) {
   } catch (error) {
     console.error('Error loading posts:', error);
     postsContainer.innerHTML = `
-      <p class="error-message">পোস্ট লোড করতে সমস্যা হয়েছে</p>
-      <button onclick="loadUserPosts('${userId}')" class="retry-btn">
-        আবার চেষ্টা করুন
-      </button>
+      <div class="posts-error">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>পোস্ট লোড করতে সমস্যা হয়েছে</p>
+        <button onclick="loadUserPosts('${userId}')" class="retry-btn">
+          <i class="fas fa-sync-alt"></i> আবার চেষ্টা করুন
+        </button>
+      </div>
     `;
   }
 }
 
-// Helper function to format post date
-function getPostDate(timestamp) {
-  if (!timestamp) return 'তারিখ নেই';
-  
-  try {
-    const date = timestamp.toDate();
-    return date.toLocaleDateString('bn-BD', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  } catch (error) {
-    console.error('Date conversion error:', error);
-    return 'তারিখ অজানা';
-  }
+// Helper functions
+function formatPostDate(timestamp) {
+  if (!timestamp?.toDate) return 'তারিখ নেই';
+  const date = timestamp.toDate();
+  return date.toLocaleDateString('bn-BD', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
 }
 
-// Helper function to truncate content
-function truncateContent(content) {
+function formatDate(date) {
+  if (date?.toDate) {
+    return date.toDate().toLocaleDateString('bn-BD');
+  }
+  return typeof date === 'string' ? date : 'অজানা';
+}
+
+function truncateContent(content, maxLength = 200) {
   if (!content) return '';
-  return content.length > 200 
-    ? content.substring(0, 200) + '...' 
+  return content.length > maxLength 
+    ? content.substring(0, maxLength) + '...' 
     : content;
 }
 
-// Get Bangla category name
 function getCategoryName(category) {
   const categories = {
     'poetry': 'কবিতা',
@@ -207,14 +249,22 @@ function getCategoryName(category) {
   return categories[category] || category || 'সাধারণ';
 }
 
-// Show alert message
+function getRoleName(role) {
+  const roles = {
+    'admin': 'প্রশাসক',
+    'author': 'লেখক',
+    'user': 'ব্যবহারকারী'
+  };
+  return roles[role] || role || 'ব্যবহারকারী';
+}
+
 function showAlert(message, type = 'error') {
-  const alertContainer = document.getElementById('alertContainer');
-  if (!alertContainer) return;
-  
   const alert = document.createElement('div');
-  alert.className = `alert ${type}`;
-  alert.textContent = message;
+  alert.className = `alert alert-${type}`;
+  alert.innerHTML = `
+    <i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i>
+    <span>${message}</span>
+  `;
   
   alertContainer.appendChild(alert);
   setTimeout(() => alert.remove(), 5000);

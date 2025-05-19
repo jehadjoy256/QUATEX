@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>পোস্ট পড়ুন | সাহিত্যপাতা</title>
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="icon" href="logo.png">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <a href="index.html"><img src="logo.png" alt="Logo" class="logo"></a>
+    <h1 class="site-title">সাহিত্যপাতা</h1>
+  </header>
+
+  <main class="container">
+    <!-- লোডিং স্পিনার -->
+    <div id="loadingSpinner" class="loading-spinner" style="display: none;">লোড হচ্ছে...</div>
+
+    <!-- পোস্ট কন্টেইনার -->
+    <div id="postContainer" class="single-post-container"></div>
+
+    <!-- মন্তব্য সেকশন -->
+    <section class="comments-section">
+      <h2>মন্তব্য করুন</h2>
+      <form id="commentForm" class="comment-form">
+        <textarea name="comment" placeholder="আপনার মন্তব্য লিখুন..." required></textarea>
+        <button type="submit">মন্তব্য পাঠান</button>
+      </form>
+      <div id="commentsContainer" class="comments-container"></div>
+    </section>
+  </main>
+
+  <footer>
+    <p>&copy; ২০২৫ সাহিত্যপাতা | সর্বস্বত্ব সংরক্ষিত</p>
+  </footer>
+
+  <script type="module" src="js/post.js"></script>
+  <script>
+    // পেজ লোড হলে initPost() চালু করো
+    window.addEventListener('DOMContentLoaded', initPost);
+  </script>
+</body>
+</html>

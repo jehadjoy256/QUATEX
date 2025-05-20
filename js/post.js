@@ -78,22 +78,22 @@ function updateUIForAuthState() {
   // Update create post form if it exists
   if (postForm) {
     if (!currentUser) {
-      postForm.innerHTML = 
+      postForm.innerHTML = `
         <div class="alert alert-error">
           পোস্ট করতে আগে <a href="login.html">লগইন</a> করুন।
         </div>
-      ;
+      `;
     }
   }
   
   // Update comment form if it exists
   if (commentForm) {
     if (!currentUser) {
-      commentForm.innerHTML = 
+      commentForm.innerHTML = `
         <div class="alert alert-error">
           মন্তব্য করতে আগে <a href="login.html">লগইন</a> করুন।
         </div>
-      ;
+      `;
     }
   }
 }
@@ -225,7 +225,7 @@ async function loadPosts(categoryFilter = '') {
       const post = doc.data();
       const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
       
-      const postHTML = 
+      const postHTML = `
         <div class="card post-card">
           <div class="post-header">
             <img src="${post.authorPhotoURL || 'https://via.placeholder.com/40'}" alt="${post.authorName}" class="post-author-pic">
@@ -249,7 +249,7 @@ async function loadPosts(categoryFilter = '') {
             </button>
           </div>
         </div>
-      ;
+      `;
       
       postsGrid.innerHTML += postHTML;
     });
@@ -320,7 +320,7 @@ async function loadSinglePost(postId) {
     const postDate = post.createdAt ? new Date(post.createdAt.seconds * 1000) : new Date();
     
     // Create post HTML
-    const postHTML = 
+    const postHTML = `
       <div class="card">
         <div class="post-header">
           <img src="${post.authorPhotoURL || 'https://via.placeholder.com/40'}" alt="${post.authorName}" class="post-author-pic">
@@ -343,7 +343,7 @@ async function loadSinglePost(postId) {
           </button>
         </div>
       </div>
-    ;
+    `;
     
     postContainer.innerHTML = postHTML;
     
@@ -400,7 +400,7 @@ async function loadComments(postId) {
       const comment = doc.data();
       const commentDate = comment.createdAt ? new Date(comment.createdAt.seconds * 1000) : new Date();
       
-      const commentHTML = 
+      const commentHTML = `
         <div class="comment" id="comment-${doc.id}">
           <img src="${comment.authorPhotoURL || 'https://via.placeholder.com/40'}" alt="${comment.authorName}" class="comment-avatar">
           <div class="comment-content">
@@ -411,13 +411,13 @@ async function loadComments(postId) {
             <div class="comment-text">${comment.content}</div>
             <div class="comment-actions">
               ${isAdmin(currentUser?.email) || currentUser?.uid === comment.authorId ? 
-                <button class="action-btn delete-comment-btn" data-comment-id="${doc.id}">
+                `<button class="action-btn delete-comment-btn" data-comment-id="${doc.id}">
                   <i class="far fa-trash-alt"></i> মুছুন
-                </button> : ''}
+                </button>` : ''}
             </div>
           </div>
         </div>
-      ;
+      `;
       
       commentsContainer.innerHTML += commentHTML;
     });
@@ -522,7 +522,7 @@ async function handleLikeClick(e) {
       });
       
       // Update UI
-      e.currentTarget.innerHTML = <i class="far fa-heart"></i> ${likes.length - 1};
+      e.currentTarget.innerHTML = `<i class="far fa-heart"></i> ${likes.length - 1}`;
     } else {
       // Like
       await updateDoc(postRef, {
@@ -530,7 +530,7 @@ async function handleLikeClick(e) {
       });
       
       // Update UI
-      e.currentTarget.innerHTML = <i class="fas fa-heart"></i> ${likes.length + 1};
+      e.currentTarget.innerHTML = `<i class="fas fa-heart"></i> ${likes.length + 1}`;
     }
   } catch (error) {
     console.error('Error toggling like:', error);
@@ -584,7 +584,7 @@ async function handleDeleteComment(e) {
     });
     
     // Remove comment from UI
-    document.getElementById(comment-${commentId}).remove();
+    document.getElementById(`comment-${commentId}`).remove();
     
     // Show success message
     showAlert('মন্তব্য সফলভাবে মুছে ফেলা হয়েছে।', 'success');
@@ -627,7 +627,7 @@ function showAlert(message, type) {
   if (!alertContainer) return;
   
   const alert = document.createElement('div');
-  alert.className = alert alert-${type};
+  alert.className = `alert alert-${type}`;
   alert.textContent = message;
   
   alertContainer.appendChild(alert);

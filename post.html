@@ -79,19 +79,18 @@
 
   <script type="module" src="js/firebase.js"></script>
   <script type="module" src="js/auth.js"></script>
-  <script type="module" src="js/post.js"></script>
+  <script type="module">
+    // Import the post module and initialize
+    import('./js/post.js').then(module => {
+      // The post.js module will automatically initialize when imported
+      console.log('Post module loaded successfully');
+    }).catch(error => {
+      console.error('Error loading post module:', error);
+    });
 
-  <!-- Add this to enable login button navigation -->
-  <script>
+    // Login button navigation
     document.getElementById("loginBtn").addEventListener("click", function() {
       window.location.href = "login.html";
-    });
-    
-    // পেজ লোড হলে initPost() চালু করো
-    window.addEventListener('DOMContentLoaded', function() {
-      if (typeof initPost === 'function') {
-        initPost();
-      }
     });
   </script>
 </body>
